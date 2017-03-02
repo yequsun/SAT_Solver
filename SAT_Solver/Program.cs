@@ -13,8 +13,8 @@ namespace SAT_Solver
         {
             int gen_count;
             int variable_count;
-            string[] individuals;
-            double[] fitness;
+            public string[] individuals;
+            public double[] fitness;
 
             public Generation(int v)
             {
@@ -51,8 +51,31 @@ namespace SAT_Solver
 
                     for(int j = 0; j < total; j++)
                     {
+                        bool[] literals = new bool[3];
+                        for(int k = 0; k < 3; k++)
+                        {
+                            string sequence = individuals[i];
+                            int v = Math.Abs(cnf.clauses[j, k])-1;
+                            if (sequence[v]=='0')
+                            {
+                                literals[k] = false;
+                            }
+                            else
+                            {
+                                literals[k] = true;
+                            }
 
+                            if(cnf.clauses[j, 0] < 0)
+                            {
+                                literals[k] = !literals[k];
+                            }
+                        }
+                        if(literals[0] || literals[1] || literals[2])
+                        {
+                            true_count++;
+                        }
                     }
+                    this.fitness[i] = (double)true_count / (double)total;
                 }
             }
 
@@ -124,7 +147,12 @@ namespace SAT_Solver
 
             Generation g = new Generation(cnf.variable_no);
             g.init();
-
+            g.get_fitness(cnf);
+            
+            for(int i = 0; i < 10; i++)
+            {
+                Console.WriteLine(i.ToString() +" "+ g.individuals[i]+" "+g.fitness[i].ToString());
+            }
 
 
         }
