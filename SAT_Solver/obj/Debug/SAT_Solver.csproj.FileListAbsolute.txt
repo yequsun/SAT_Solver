@@ -1,0 +1,9 @@
+C:\Users\yequs\Source\Repos\CS214-Project2\SAT_Solver\SAT_Solver\bin\Debug\SAT_Solver.exe.config
+C:\Users\yequs\Source\Repos\CS214-Project2\SAT_Solver\SAT_Solver\bin\Debug\SAT_Solver.exe
+C:\Users\yequs\Source\Repos\CS214-Project2\SAT_Solver\SAT_Solver\bin\Debug\SAT_Solver.pdb
+C:\Users\yequs\Source\Repos\CS214-Project2\SAT_Solver\SAT_Solver\obj\Debug\SAT_Solver.csprojResolveAssemblyReference.cache
+C:\Users\yequs\Source\Repos\CS214-Project2\SAT_Solver\SAT_Solver\obj\Debug\SAT_Solver.exe
+C:\Users\yequs\Source\Repos\CS214-Project2\SAT_Solver\SAT_Solver\obj\Debug\SAT_Solver.pdb
+C:\Users\yequs\Source\Repos\SAT_Solver\SAT_Solver\bin\Debug\SAT_Solver.exe.config
+C:\Users\yequs\Source\Repos\SAT_Solver\SAT_Solver\obj\Debug\SAT_Solver.exe
+C:\Users\yequs\Source\Repos\SAT_Solver\SAT_Solver\obj\Debug\SAT_Solver.pdb
