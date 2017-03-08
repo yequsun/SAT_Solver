@@ -76,8 +76,8 @@ namespace SAT_Solver
 
         public class Generation
         {
-            int gen_count;
-            int variable_count;
+            public int gen_count;
+            public int variable_count;
             public List<individual> population;
             
             public class individual
@@ -155,6 +155,7 @@ namespace SAT_Solver
                 }
 
                 //crossover
+                
                 for(int i = 2; i < 10; i += 2)
                 {
                     string father = selected[i].bits;
@@ -177,11 +178,12 @@ namespace SAT_Solver
                     newGen.population.Add(son);
                     newGen.population.Add(daughter);
                 }
+                
 
                 //mutation
                 for(int i = 2; i < 10; i++)
                 {
-                    string cur = this.population[i].bits;
+                    string cur = newGen.population[i].bits;
                     char[] tmp = cur.ToCharArray();
                     if (r.NextDouble() < 0.9)
                     {
@@ -192,13 +194,13 @@ namespace SAT_Solver
                                 tmp[j] = Flip(tmp[j]);
                             }
                         }
-                        cur = tmp.ToString();
+                        cur = new string(tmp);
                     }
                 }
                 //flip heuristic
                 for(int i = 2; i < 10; i++)
                 {
-                    string cur = this.population[i].bits;
+                    string cur = newGen.population[i].bits;
                     char[] tmp = cur.ToArray();
                     int[] flip_order = RandomSequence(variable_count);
                     for(int j = 0; j < variable_count; j++)
@@ -208,12 +210,13 @@ namespace SAT_Solver
                         int index = flip_order[j];
                         tmp[index] = Flip(tmp[index]);
                         new_fitness = Get_single_fitness(new string(tmp), cnf);
-                        if (new_fitness <= old_fitness)
+                         if (new_fitness < old_fitness)
                         {
                             tmp[index] = Flip(tmp[index]);
                         }
 
                     }
+                    newGen.population[i].bits = new string(tmp);
                 }
 
 
@@ -339,7 +342,8 @@ namespace SAT_Solver
                 Console.WriteLine(i.ToString() +" "+ g.population[i].bits+" "+g.population[i].fitness.ToString()+" "+g.population[i].prob.ToString());
             }
             Generation newgen = g;
-            for(int i=0;i<3000;i++)
+            for(int i=0;i<10000;i++)
+            //while(true)
             {
                 newgen.Get_fitness(cnf);
                 bool solved = false;
@@ -348,6 +352,7 @@ namespace SAT_Solver
                     if (newgen.population[j].fitness == 1)
                     {
                         solved = true;
+                        Console.WriteLine("Fuck yeah");
                         break;
                     }
                 }
@@ -358,7 +363,7 @@ namespace SAT_Solver
                 newgen = newgen.NextGen(cnf);
             }
             newgen.Get_fitness(cnf);
-            Console.WriteLine("");
+            Console.WriteLine("Generations takes: "+newgen.gen_count.ToString());
 
         }
     }
