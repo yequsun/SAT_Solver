@@ -194,7 +194,7 @@ namespace SAT_Solver
                                 tmp[j] = Flip(tmp[j]);
                             }
                         }
-                        cur = new string(tmp);
+                        newGen.population[i].bits = new string(tmp);
                     }
                 }
                 //flip heuristic
@@ -330,40 +330,45 @@ namespace SAT_Solver
         static void Main(string[] args)
         {
             //Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory+ "uf20-01.cnf");
-            string path = AppDomain.CurrentDomain.BaseDirectory + "uf20-01.cnf";
-            CNF_Instance cnf = Cnf_read(path);
+            string path = AppDomain.CurrentDomain.BaseDirectory + @"\a";
+            string[] file_list = Directory.GetFiles(path);
 
-            Generation g = new Generation(cnf.variable_no);
-            g.Init();
-            g.Get_fitness(cnf);
-            g.population.Sort((x,y)=>y.fitness.CompareTo(x.fitness));
-            for(int i = 0; i < 10; i++)
+            int file_count = file_list.Length;
+            int total_generations = 0;
+            Console.WriteLine(file_list.Length.ToString());
+
+            foreach(string f in file_list)
             {
-                Console.WriteLine(i.ToString() +" "+ g.population[i].bits+" "+g.population[i].fitness.ToString()+" "+g.population[i].prob.ToString());
-            }
-            Generation newgen = g;
-            for(int i=0;i<10000;i++)
-            //while(true)
-            {
-                newgen.Get_fitness(cnf);
-                bool solved = false;
-                for(int j = 0; j < 10; j++)
+                CNF_Instance cnf = Cnf_read(f);
+
+                Generation g = new Generation(cnf.variable_no);
+                g.Init();
+                Generation newgen = g;
+                for (int i = 0; i < 10000; i++)
+                //while(true)
                 {
-                    if (newgen.population[j].fitness == 1)
+                    newgen.Get_fitness(cnf);
+                    bool solved = false;
+                    for (int j = 0; j < 10; j++)
                     {
-                        solved = true;
-                        Console.WriteLine("Fuck yeah");
+                        if (newgen.population[j].fitness == 1)
+                        {
+                            solved = true;
+                            Console.WriteLine("Fuck yeah");
+                            break;
+                        }
+                    }
+                    if (solved)
+                    {
                         break;
                     }
+                    newgen = newgen.NextGen(cnf);
                 }
-                if (solved)
-                {
-                    break;
-                }
-                newgen = newgen.NextGen(cnf);
+                total_generations += newgen.gen_count;
             }
-            newgen.Get_fitness(cnf);
-            Console.WriteLine("Generations takes: "+newgen.gen_count.ToString());
+
+            double avg = (double)total_generations / (double)file_count;
+            Console.WriteLine("AVG Generations takes: "+avg.ToString());
 
         }
     }
