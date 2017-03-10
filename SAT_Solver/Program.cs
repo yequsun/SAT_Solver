@@ -336,7 +336,7 @@ namespace SAT_Solver
         static void Main(string[] args)
         {
             //Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory+ "uf20-01.cnf");
-            string path = AppDomain.CurrentDomain.BaseDirectory + @"\d";
+            string path = AppDomain.CurrentDomain.BaseDirectory + @"\a";
             string[] file_list = Directory.GetFiles(path);
 
             int file_count = file_list.Length;
@@ -344,6 +344,7 @@ namespace SAT_Solver
             int total_flips = 0;
             Console.WriteLine(file_list.Length.ToString());
 
+            /*
             foreach(string f in file_list)
             {
                 CNF_Instance cnf = Cnf_read(f);
@@ -374,7 +375,39 @@ namespace SAT_Solver
                 total_generations += newgen.gen_count;
                 total_flips += newgen.total_flips;
             }
+            */
 
+            ///*
+            Parallel.ForEach(file_list,(f)=> {
+                CNF_Instance cnf = Cnf_read(f);
+
+                Generation g = new Generation(cnf.variable_no);
+                g.Init();
+                Generation newgen = g;
+                for (int i = 0; i < 10000; i++)
+                //while(true)
+                {
+                    newgen.Get_fitness(cnf);
+                    bool solved = false;
+                    for (int j = 0; j < 10; j++)
+                    {
+                        if (newgen.population[j].fitness == 1)
+                        {
+                            solved = true;
+                            Console.WriteLine("Fuck yeah");
+                            break;
+                        }
+                    }
+                    if (solved)
+                    {
+                        break;
+                    }
+                    newgen = newgen.NextGen(cnf);
+                }
+                total_generations += newgen.gen_count;
+                total_flips += newgen.total_flips;
+            });
+            //*/
             double avg = (double)total_generations / (double)file_count;
             double avg_f = (double)total_flips / (double)file_count;
             Console.WriteLine("AVG Generations takes: "+avg.ToString());
