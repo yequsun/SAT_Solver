@@ -79,7 +79,8 @@ namespace SAT_Solver
             public int gen_count;
             public int variable_count;
             public List<individual> population;
-            
+            public int total_flips;
+
             public class individual
             {
                 public string bits;
@@ -99,6 +100,7 @@ namespace SAT_Solver
                 gen_count = 0;
                 variable_count = v;
                 population = new List<individual>(10);
+                total_flips = 0;
             }
 
             public void Init()
@@ -118,6 +120,7 @@ namespace SAT_Solver
             {
                 Generation newGen = new Generation(this.variable_count);
                 newGen.gen_count = this.gen_count + 1;
+                newGen.total_flips = this.total_flips;
                 this.Get_fitness(cnf);
                 this.population.Sort((x, y) => y.fitness.CompareTo(x.fitness));
                 List<individual> selected = new List<individual>(10);
@@ -192,6 +195,7 @@ namespace SAT_Solver
                             if (r.NextDouble() < 0.5)
                             {
                                 tmp[j] = Flip(tmp[j]);
+                                newGen.total_flips++;
                             }
                         }
                         newGen.population[i].bits = new string(tmp);
@@ -209,10 +213,12 @@ namespace SAT_Solver
                         old_fitness = Get_single_fitness(new string(tmp), cnf);
                         int index = flip_order[j];
                         tmp[index] = Flip(tmp[index]);
+                        newGen.total_flips++;
                         new_fitness = Get_single_fitness(new string(tmp), cnf);
                          if (new_fitness < old_fitness)
                         {
                             tmp[index] = Flip(tmp[index]);
+                            newGen.total_flips--;
                         }
 
                     }
@@ -330,11 +336,12 @@ namespace SAT_Solver
         static void Main(string[] args)
         {
             //Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory+ "uf20-01.cnf");
-            string path = AppDomain.CurrentDomain.BaseDirectory + @"\a";
+            string path = AppDomain.CurrentDomain.BaseDirectory + @"\d";
             string[] file_list = Directory.GetFiles(path);
 
             int file_count = file_list.Length;
             int total_generations = 0;
+            int total_flips = 0;
             Console.WriteLine(file_list.Length.ToString());
 
             foreach(string f in file_list)
@@ -365,9 +372,11 @@ namespace SAT_Solver
                     newgen = newgen.NextGen(cnf);
                 }
                 total_generations += newgen.gen_count;
+                total_flips += newgen.total_flips;
             }
 
             double avg = (double)total_generations / (double)file_count;
+            double avg_f = (double)total_flips / (double)file_count;
             Console.WriteLine("AVG Generations takes: "+avg.ToString());
 
         }
