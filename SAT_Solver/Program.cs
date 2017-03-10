@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Diagnostics;
 
 namespace SAT_Solver
 {
@@ -207,21 +208,28 @@ namespace SAT_Solver
                     string cur = newGen.population[i].bits;
                     char[] tmp = cur.ToArray();
                     int[] flip_order = RandomSequence(variable_count);
-                    for(int j = 0; j < variable_count; j++)
+                    double old_fitness = 0, new_fitness = 0;
+                    do
                     {
-                        double old_fitness, new_fitness;
-                        old_fitness = Get_single_fitness(new string(tmp), cnf);
-                        int index = flip_order[j];
-                        tmp[index] = Flip(tmp[index]);
-                        newGen.total_flips++;
-                        new_fitness = Get_single_fitness(new string(tmp), cnf);
-                         if (new_fitness < old_fitness)
+                        for (int j = 0; j < variable_count; j++)
                         {
+                            old_fitness = Get_single_fitness(new string(tmp), cnf);
+                            int index = flip_order[j];
                             tmp[index] = Flip(tmp[index]);
-                            newGen.total_flips--;
-                        }
+                            newGen.total_flips++;
+                            new_fitness = Get_single_fitness(new string(tmp), cnf);
+                            if (new_fitness < old_fitness)
+                            {
+                                tmp[index] = Flip(tmp[index]);
+                                newGen.total_flips--;
+                            }
 
-                    }
+                        }
+                        if (new_fitness == 1)
+                        {
+                            break;
+                        }
+                    } while (old_fitness < new_fitness);
                     newGen.population[i].bits = new string(tmp);
                 }
 
@@ -336,12 +344,13 @@ namespace SAT_Solver
         static void Main(string[] args)
         {
             //Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory+ "uf20-01.cnf");
-            string path = AppDomain.CurrentDomain.BaseDirectory + @"\a";
+            string path = AppDomain.CurrentDomain.BaseDirectory + @"\d";
             string[] file_list = Directory.GetFiles(path);
-
+            object synclock = new object();
             int file_count = file_list.Length;
             int total_generations = 0;
             int total_flips = 0;
+            int total_success = 0;
             Console.WriteLine(file_list.Length.ToString());
 
             /*
@@ -378,14 +387,17 @@ namespace SAT_Solver
             */
 
             ///*
+            int count = 0;
+            List<long> running_times = new List<long>();
             Parallel.ForEach(file_list,(f)=> {
                 CNF_Instance cnf = Cnf_read(f);
 
                 Generation g = new Generation(cnf.variable_no);
                 g.Init();
                 Generation newgen = g;
-                for (int i = 0; i < 10000; i++)
-                //while(true)
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                while(true)
                 {
                     newgen.Get_fitness(cnf);
                     bool solved = false;
@@ -394,7 +406,14 @@ namespace SAT_Solver
                         if (newgen.population[j].fitness == 1)
                         {
                             solved = true;
-                            Console.WriteLine("Fuck yeah");
+                            sw.Stop();
+                            lock (synclock)
+                            {
+                                total_success++;
+                                running_times.Add(sw.ElapsedMilliseconds);
+                            }
+
+                            Console.WriteLine(count.ToString());
                             break;
                         }
                     }
@@ -402,14 +421,28 @@ namespace SAT_Solver
                     {
                         break;
                     }
+                    sw.Stop();
+                    if (sw.ElapsedMilliseconds > 60000)
+                    {
+                        Console.WriteLine(count.ToString() + " Time Out");
+                        break;
+                    }
+                    sw.Start();
                     newgen = newgen.NextGen(cnf);
                 }
-                total_generations += newgen.gen_count;
-                total_flips += newgen.total_flips;
+                lock (synclock)
+                {
+                    count++;
+                    total_generations += newgen.gen_count;
+                    total_flips += newgen.total_flips;
+                }
+                
             });
             //*/
-            double avg = (double)total_generations / (double)file_count;
-            double avg_f = (double)total_flips / (double)file_count;
+            double avg = (double)total_generations / (double)total_success;
+            double avg_f = (double)total_flips / (double)total_success;
+            running_times.Sort();
+            long median_time = running_times[running_times.Count / 2];
             Console.WriteLine("AVG Generations takes: "+avg.ToString());
 
         }
